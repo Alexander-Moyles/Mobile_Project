@@ -71,7 +71,11 @@ export default function GameScreen() {
   
   // Fixed gun position - currently in the middle (MODIFY THIS)
   const gunWidth = 60;
-  const gunPosition = screenWidth / 2 - gunWidth / 2;
+  //const gunPosition = screenWidth / 2 - gunWidth / 2;
+  const [gunPosition, setGunPosition] = useState({
+     'x': (screenWidth / 2 - gunWidth / 2) ,
+     'y': screenHeight - 70
+  });
   const gunCenterX = screenWidth / 2;
   
   /**
@@ -90,6 +94,16 @@ export default function GameScreen() {
    *   setGunPosition({ x: locationX - gunWidth/2, y: locationY });
    * };
    */
+
+   const [mousePosition, setMousePosition] = useState(0);
+    //TODO: Get this code working
+   useEffect(() => {
+    const MouseMove = event => {
+        setGunPosition(event.clientY);
+    }
+    //window.addEventListener('mousemove', MouseMove);
+    console.log(mousePosition);
+   }, []);
   
   // Refs for game timers and IDs
   const bubbleIdRef = useRef(1);
@@ -136,7 +150,7 @@ export default function GameScreen() {
      */
     
     // Check for hits immediately
-    checkHits(gunCenterX);
+    checkHits(gunPosition['x']);
     
     // Make laser disappear after 300ms
     laserTimeoutRef.current = setTimeout(() => {
@@ -325,7 +339,7 @@ export default function GameScreen() {
             <View
               style={[
                 styles.laser,
-                { left: gunCenterX - 2 } // Center the 4px wide laser from gun center
+                { left: gunPosition['x'] + (gunWidth / 2) - 2 } // Center the 4px wide laser from gun center
               ]}
             />
           )}
@@ -339,9 +353,9 @@ export default function GameScreen() {
            * 2. Add visual indication of gun direction/angle
            * 3. Add controls or touch areas for movement
            */}
-          
+
           {/* Gun - currently static in middle */}
-          <View style={[styles.gun, { left: gunPosition }]}>
+          <View style={[styles.gun, { left: gunPosition['x'] }]}>
             <View style={styles.gunBase} />
             <View style={styles.gunBarrel} />
           </View>
