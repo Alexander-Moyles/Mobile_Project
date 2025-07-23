@@ -73,10 +73,9 @@ export default function GameScreen() {
   const gunWidth = 60;
   //const gunPosition = screenWidth / 2 - gunWidth / 2;
   const [gunPosition, setGunPosition] = useState({
-     'x': (screenWidth / 2 - gunWidth / 2) ,
-     'y': screenHeight - 70
+     'x': (screenWidth / 2 - gunWidth / 2)
   });
-  const gunCenterX = screenWidth / 2;
+  // const gunCenterX = screenWidth / 2;
   
   /**
    * ============== STUDENT TASK 2 ==============
@@ -94,16 +93,6 @@ export default function GameScreen() {
    *   setGunPosition({ x: locationX - gunWidth/2, y: locationY });
    * };
    */
-
-   const [mousePosition, setMousePosition] = useState(0);
-    //TODO: Get this code working
-   useEffect(() => {
-    const MouseMove = event => {
-        setGunPosition(event.clientY);
-    }
-    //window.addEventListener('mousemove', MouseMove);
-    console.log(mousePosition);
-   }, []);
   
   // Refs for game timers and IDs
   const bubbleIdRef = useRef(1);
@@ -115,9 +104,11 @@ export default function GameScreen() {
    * Handle tap to shoot laser
    * Currently fires the laser on any tap when game is active
    */
-  const handleTap = () => {
+  const handleTap = (event) => {
     if (!gameStarted || gameOver) return;
     fireLaser();
+    let { locationX } = event.nativeEvent;
+    setGunPosition({ x: locationX - gunWidth/2});
   };
   
   /**
@@ -310,7 +301,7 @@ export default function GameScreen() {
   }, []);
   
   return (
-    <View style={styles.container}>
+    <View style={styles.container} >
       {/* Game area */}
       <TouchableWithoutFeedback onPress={handleTap} disabled={!gameStarted || gameOver}>
         <View style={styles.gameArea}>
@@ -333,7 +324,7 @@ export default function GameScreen() {
            * 2. Add visual effects (color, thickness, etc.)
            * 3. Consider adding a cooldown or power meter
            */}
-          
+
           {/* Laser - currently fixed to fire from center of gun */}
           {laserVisible && (
             <View
@@ -355,7 +346,7 @@ export default function GameScreen() {
            */}
 
           {/* Gun - currently static in middle */}
-          <View style={[styles.gun, { left: gunPosition['x'] }]}>
+          <View style={[styles.gun, { left: gunPosition.x }]}>
             <View style={styles.gunBase} />
             <View style={styles.gunBarrel} />
           </View>
