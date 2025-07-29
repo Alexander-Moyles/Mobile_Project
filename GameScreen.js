@@ -71,11 +71,9 @@ export default function GameScreen() {
   
   // Fixed gun position - currently in the middle (MODIFY THIS)
   const gunWidth = 60;
-  //const gunPosition = screenWidth / 2 - gunWidth / 2;
   const [gunPosition, setGunPosition] = useState({
      'x': (screenWidth / 2 - gunWidth / 2)
   });
-  // const gunCenterX = screenWidth / 2;
   
   /**
    * ============== STUDENT TASK 2 ==============
@@ -102,11 +100,10 @@ export default function GameScreen() {
   
   /**
    * Handle tap to shoot laser
-   * Currently fires the laser on any tap when game is active
    */
   const handleTap = (event) => {
     if (!gameStarted || gameOver) return;
-    let { locationX, locationY } = event.nativeEvent;
+    let { locationX } = event.nativeEvent;
     setGunPosition({ x: locationX - gunWidth/2});
     fireLaser();
   };
@@ -141,7 +138,7 @@ export default function GameScreen() {
      */
     
     // Check for hits immediately
-    checkHits(gunPosition['x']);
+    checkHits(gunPosition['x'] + (gunWidth / 2) - 2);
     
     // Make laser disappear after 300ms
     laserTimeoutRef.current = setTimeout(() => {
@@ -302,6 +299,7 @@ export default function GameScreen() {
   
   return (
   <>
+    {/* Ensures player can only move/fire the gun if they tap the bottom of the screen */}
     <TouchableWithoutFeedback onPress={handleTap}>
         <View style={styles.gunHandler}></View>
     </TouchableWithoutFeedback>
@@ -493,7 +491,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     width: 4,
-    height: '100%',
+    height: '97%',
     backgroundColor: '#ff0000',
     shadowColor: '#ff0000',
     shadowOffset: { width: 0, height: 0 },
