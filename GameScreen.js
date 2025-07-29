@@ -106,9 +106,9 @@ export default function GameScreen() {
    */
   const handleTap = (event) => {
     if (!gameStarted || gameOver) return;
-    fireLaser();
-    let { locationX } = event.nativeEvent;
+    let { locationX, locationY } = event.nativeEvent;
     setGunPosition({ x: locationX - gunWidth/2});
+    fireLaser();
   };
   
   /**
@@ -301,9 +301,14 @@ export default function GameScreen() {
   }, []);
   
   return (
+  <>
+    <TouchableWithoutFeedback onPress={handleTap}>
+        <View style={styles.gunHandler}></View>
+    </TouchableWithoutFeedback>
+
     <View style={styles.container} >
       {/* Game area */}
-      <TouchableWithoutFeedback onPress={handleTap} disabled={!gameStarted || gameOver}>
+      <TouchableWithoutFeedback disabled={!gameStarted || gameOver}>
         <View style={styles.gameArea}>
           {/* Bubbles */}
           {bubbles.map(bubble => (
@@ -347,6 +352,7 @@ export default function GameScreen() {
 
           {/* Gun - currently static in middle */}
           <View style={[styles.gun, { left: gunPosition.x }]}>
+
             <View style={styles.gunBase} />
             <View style={styles.gunBarrel} />
           </View>
@@ -370,6 +376,9 @@ export default function GameScreen() {
           </TouchableWithoutFeedback>
         </View>
       )}
+
+      {/* Track for laser gun */}
+      {<View onPress={fireLaser} style={styles.gunTrack}></View>}
       
       {/* Game Over Screen */}
       {gameOver && (
@@ -384,6 +393,7 @@ export default function GameScreen() {
         </View>
       )}
     </View>
+  </>
   );
 }
 
@@ -401,6 +411,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000033',
+    zIndex: 1,
   },
   gameArea: {
     flex: 1,
@@ -468,6 +479,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#333',
     borderTopLeftRadius: 5,
     borderTopRightRadius: 5,
+    zIndex: 90,
   },
   gunBarrel: {
     position: 'absolute',
@@ -475,6 +487,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 30,
     backgroundColor: '#222',
+    zIndex: 90,
   },
   laser: {
     position: 'absolute',
@@ -488,5 +501,22 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 20,
     zIndex: 90,
+  },
+  gunTrack: {
+    position: 'absolute',
+    backgroundColor: '#3D1A35',
+    bottom: 0,
+    width: screenWidth,
+    height: '8%',
+    alignItems: 'bottom',
+    zIndex: -1,
+  },
+  gunHandler: {
+    position: 'absolute',
+    bottom: 0,
+    width: screenWidth,
+    height: '8%',
+    alignItems: 'bottom',
+    zIndex: 200,
   },
 });
