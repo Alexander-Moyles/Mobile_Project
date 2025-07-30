@@ -29,7 +29,7 @@ import { View, StyleSheet, Text } from 'react-native';
  * @param {number} props.radius - Radius of the bubble
  * @returns {React.Component} Rendered bubble
  */
-export default function ElectricBubble({ x, y, radius }) {
+export default function IceBubble({ x, y, radius }) { // 🧊
   return (
     <View
       style={[
@@ -43,7 +43,7 @@ export default function ElectricBubble({ x, y, radius }) {
         },
       ]}
     >
-        <Text style={styles.text}>⚡</Text>
+        <Text style={styles.text}>❄️</Text>
     </View>
   );
 }
@@ -51,7 +51,7 @@ export default function ElectricBubble({ x, y, radius }) {
 const styles = StyleSheet.create({
   bubble: {
     position: 'absolute',
-    backgroundColor: 'yellow',
+    backgroundColor: 'white',
     opacity: 0.75,
     borderColor: 'blue',
     borderWidth: 1.75,

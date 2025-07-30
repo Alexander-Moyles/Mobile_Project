@@ -34,6 +34,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, Dimensions, TouchableWithoutFeedback, ImageBackground } from 'react-native';
 import Bubble from './components/Bubble';
 import ElectricBubble from './components/ElectricBubble';
+import IceBubble from './components/IceBubble';
+import PainBubble from './components/PainBubble';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -59,6 +61,10 @@ export default function GameScreen() {
   const [powerBubbles, setPowerBubbles] = useState([]);
   const [laserWidth, setLaserWidth] = useState(4);
   const [powerTime, setPowerTime] = useState();
+  const [bubbleSpeed, setBubbleSpeed] = useState(2);
+  const [painBubbles, setPainBubbles] = useState([]);
+
+
   
   /**
    * ============== STUDENT TASK 1 ==============
@@ -104,7 +110,9 @@ export default function GameScreen() {
   const timerRef = useRef(null);
   const bubbleTimerRef = useRef(null);
   const powerBubbleTimerRef = useRef(null);
+  const painBubbleTimerRef = useRef(null);
   const laserTimeoutRef = useRef(null);
+  const powerTimeRef = useRef(null)
   
   /**
    * Handle tap to shoot laser
@@ -152,8 +160,9 @@ export default function GameScreen() {
      */
     
     // Check for hits immediately
-    checkHits(gunPosition['x'] + (gunWidth / 2) - 2);
-    checkPowerHits(gunPosition['x'] + (gunWidth / 2) - 2);
+    checkHits(gunPosition['x'] + (gunWidth / 2) - (laserWidth / 2));
+    checkPowerHits(gunPosition['x'] + (gunWidth / 2) - (laserWidth / 2));
+    checkPainHits(gunPosition['x'] + (gunWidth / 2) - (laserWidth / 2));
     
     // Make laser disappear after 300ms
     laserTimeoutRef.current = setTimeout(() => {
@@ -193,7 +202,7 @@ export default function GameScreen() {
         
         // Check if laser x-coordinate is within bubble's horizontal range
         const distanceX = Math.abs(bubbleCenterX - laserX);
-        
+
         // If laser is within bubble radius, it's a hit
         if (distanceX <= bubble.radius) {
           hitBubbleIds.push(bubble.id);
@@ -211,6 +220,10 @@ export default function GameScreen() {
     });
   };
 
+    /**
+     * Check if laser hits any power bubbles
+     * @param {number} laserX - X coordinate of the laser
+     */
     const checkPowerHits = (laserX) => {
         setPowerBubbles(prevBubbles => {
           const hitBubbleIds = [];
@@ -231,10 +244,10 @@ export default function GameScreen() {
             }
           });
 
-          // If any bubbles were hit, update the score
+          // If any bubbles were hit, update the score and apply power-up
           if (hitCount > 0) {
             setScore(prevScore => prevScore + hitCount);
-            setPowerTime(3000);
+            setPowerTime(300);
           }
 
           // Return bubbles that weren't hit
@@ -242,12 +255,39 @@ export default function GameScreen() {
         });
   };
 
-  const PowerElectric = (time) => {
-    while (time > 0) {
-        setLaserWidth(10);
-        time--
-    }
-  }
+  /**
+       * Check if laser hits any pain bubbles
+       * @param {number} laserX - X coordinate of the laser
+       */
+      const checkPainHits = (laserX) => {
+          setPainBubbles(prevBubbles => {
+            const hitBubbleIds = [];
+            let hitCount = 0;
+
+            // Check each bubble for collision
+            prevBubbles.forEach(bubble => {
+              // Calculate bubble center
+              const bubbleCenterX = bubble.x + bubble.radius;
+
+              // Check if laser x-coordinate is within bubble's horizontal range
+              const distanceX = Math.abs(bubbleCenterX - laserX);
+
+              // If laser is within bubble radius, it's a hit
+              if (distanceX <= bubble.radius) {
+                hitBubbleIds.push(bubble.id);
+                hitCount++;
+              }
+            });
+
+            // If any bubbles were hit, reduce the score
+            if (hitCount > 0 && score > 0) {
+              setScore(prevScore => prevScore - hitCount);
+            }
+
+            // Return bubbles that weren't hit
+            return prevBubbles.filter(bubble => !hitBubbleIds.includes(bubble.id));
+          });
+    };
   
   /**
    * Spawn a new bubble with random horizontal position
@@ -280,6 +320,20 @@ export default function GameScreen() {
 
       setPowerBubbles(prev => [...prev, newBubble]);
     };
+
+  const spawnPainBubble = () => {
+      const radius = 17.5;
+      // Ensure bubble stays within screen bounds
+      const maxX = screenWidth - (radius * 2);
+      const newBubble = {
+        id: bubbleIdRef.current++,
+        x: Math.random() * maxX,
+        y: screenHeight - 100, // Start near bottom of screen
+        radius: radius,
+      };
+
+      setPainBubbles(prev => [...prev, newBubble]);
+    };
   
   /**
    * Start the game
@@ -295,10 +349,41 @@ export default function GameScreen() {
     bubbleIdRef.current = 1;
     
     // Start spawning bubbles every 500ms
-    //bubbleTimerRef.current = setInterval(spawnBubble, 500);
+    bubbleTimerRef.current = setInterval(spawnBubble, 500);
 
-    // Start spawning power bubbles every 2000ms
-    powerBubbleTimerRef.current = setInterval(spawnPowerBubble, 2000);
+    // Start spawning power bubbles every 5000ms
+    //powerBubbleTimerRef.current = setInterval(spawnPowerBubble, 12000);
+
+    // Start spawning pain bubbles every 2000ms
+    painBubbleTimerRef.current = setInterval(spawnPainBubble, 2000);
+
+/*
+    // Timer for electric power-up
+    powerTimeRef.current = setInterval(() => {
+          setPowerTime(prev => {
+            if (prev > 1) {
+              setLaserWidth(40);
+            }
+            else (
+              setLaserWidth(4)
+            )
+            return prev - 1;
+          });
+        }, powerTime);
+*/
+
+    // Timer for ice power-up
+    powerTimeRef.current = setInterval(() => {
+          setPowerTime(prev => {
+            if (prev > 1) {
+              setBubbleSpeed(0.5)
+            }
+            else (
+              setBubbleSpeed(5)
+            )
+            return prev - 1;
+          });
+        }, powerTime);
     
     // Start countdown timer
     timerRef.current = setInterval(() => {
@@ -329,26 +414,28 @@ export default function GameScreen() {
     bubbleIdRef.current = 1;
     
     if (timerRef.current) clearInterval(timerRef.current);
+    if (powerTimeRef.current) clearInterval(powerTimeRef.current);
     if (bubbleTimerRef.current) clearInterval(bubbleTimerRef.current);
     if (powerBubbleTimerRef.current) clearInterval(powerBubbleTimerRef.current);
   };
-  
+
   /**
    * Move bubbles upward
    * Uses effect to animate bubbles moving up the screen
    */
   useEffect(() => {
     if (!gameStarted || gameOver) return;
+    console.log(bubbleSpeed)
     
     const moveInterval = setInterval(() => {
       setBubbles(prev => {
         const updatedBubbles = prev
           .map(bubble => ({
             ...bubble,
-            y: bubble.y - 2, // Move bubbles up
+            y: bubble.y - bubbleSpeed, // Move bubbles up
           }))
           .filter(bubble => bubble.y > -60); // Remove bubbles that exit the top
-        
+
         return updatedBubbles;
       });
     }, 16); // ~60 FPS
@@ -356,6 +443,10 @@ export default function GameScreen() {
     return () => clearInterval(moveInterval);
   }, [gameStarted, gameOver]);
 
+  /**
+   * Move power bubbles upward
+   * Uses effect to animate bubbles moving up the screen
+   */
   useEffect(() => {
       if (!gameStarted || gameOver) return;
 
@@ -374,6 +465,29 @@ export default function GameScreen() {
 
       return () => clearInterval(moveInterval);
     }, [gameStarted, gameOver]);
+
+    /**
+     * Move pain bubbles upward
+     * Uses effect to animate bubbles moving up the screen
+     */
+     useEffect(() => {
+        if (!gameStarted || gameOver) return;
+
+        const moveInterval = setInterval(() => {
+          setPainBubbles(prev => {
+            const updatedBubbles = prev
+              .map(bubble => ({
+                ...bubble,
+                y: bubble.y - (Math.random() * 20), // Move bubbles up
+              }))
+              .filter(bubble => bubble.y > -60); // Remove bubbles that exit the top
+
+            return updatedBubbles;
+          });
+        }, 16); // ~60 FPS
+
+        return () => clearInterval(moveInterval);
+     }, [gameStarted, gameOver]);
   
   /**
    * Cleanup on unmount
@@ -382,6 +496,7 @@ export default function GameScreen() {
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      if (powerTimeRef.current) clearInterval(powerTimeRef.current);
       if (bubbleTimerRef.current) clearInterval(bubbleTimerRef.current);
       if (powerBubbleTimerRef.current) clearInterval(powerBubbleTimerRef.current);
       if (laserTimeoutRef.current) clearTimeout(laserTimeoutRef.current);
@@ -416,15 +531,25 @@ export default function GameScreen() {
               radius={bubble.radius}
             />
           ))}
-          {/* Power Bubbles */}
+          {/* Power Bubbles
           {powerBubbles.map(bubble => (
-            <ElectricBubble
+            <IceBubble
               key={`bubble-${bubble.id}`}
               x={bubble.x}
               y={bubble.y}
               radius={bubble.radius}
             />
           ))}
+          */}
+          {/* Pain Bubbles */}
+          {painBubbles.map(bubble => (
+              <PainBubble
+                key={`bubble-${bubble.id}`}
+                x={bubble.x}
+                y={bubble.y}
+                radius={bubble.radius}
+              />
+            ))}
 
           {/**
            * ============== STUDENT TASK 5 ==============
@@ -441,8 +566,8 @@ export default function GameScreen() {
             <View
               style={[
                 styles.laser,
-                { left: gunPosition['x'] + (gunWidth / 2) - 2 }, // Center the 4px wide laser from gun center
-                { width: laserWidth}
+                { left: gunPosition['x'] + (gunWidth / 2) - (laserWidth / 2) }, // Center the 4px wide laser from gun center
+                { width: laserWidth }
               ]}
             />
           )}
