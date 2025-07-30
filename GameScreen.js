@@ -36,6 +36,7 @@ import Bubble from './components/Bubble';
 import ElectricBubble from './components/ElectricBubble';
 import IceBubble from './components/IceBubble';
 import PainBubble from './components/PainBubble';
+import BonusBubble from './components/BonusBubble';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -59,10 +60,11 @@ export default function GameScreen() {
   const [laserVisible, setLaserVisible] = useState(false);
 
   const [powerBubbles, setPowerBubbles] = useState([]);
+  const [painBubbles, setPainBubbles] = useState([]);
+  const [bonusBubbles, setBonusBubbles] = useState([]);
   const [laserWidth, setLaserWidth] = useState(4);
   const [powerTime, setPowerTime] = useState();
   const [bubbleSpeed, setBubbleSpeed] = useState(2);
-  const [painBubbles, setPainBubbles] = useState([]);
 
 
   
@@ -111,6 +113,7 @@ export default function GameScreen() {
   const bubbleTimerRef = useRef(null);
   const powerBubbleTimerRef = useRef(null);
   const painBubbleTimerRef = useRef(null);
+  const bonusBubbleTimerRef = useRef(null);
   const laserTimeoutRef = useRef(null);
   const powerTimeRef = useRef(null)
   
@@ -163,6 +166,7 @@ export default function GameScreen() {
     checkHits(gunPosition['x'] + (gunWidth / 2) - (laserWidth / 2));
     checkPowerHits(gunPosition['x'] + (gunWidth / 2) - (laserWidth / 2));
     checkPainHits(gunPosition['x'] + (gunWidth / 2) - (laserWidth / 2));
+    checkBonusHits(gunPosition['x'] + (gunWidth / 2) - (laserWidth / 2));
     
     // Make laser disappear after 300ms
     laserTimeoutRef.current = setTimeout(() => {
@@ -255,38 +259,72 @@ export default function GameScreen() {
         });
   };
 
-  /**
-       * Check if laser hits any pain bubbles
-       * @param {number} laserX - X coordinate of the laser
-       */
-      const checkPainHits = (laserX) => {
-          setPainBubbles(prevBubbles => {
-            const hitBubbleIds = [];
-            let hitCount = 0;
+    /**
+     * Check if laser hits any pain bubbles
+     * @param {number} laserX - X coordinate of the laser
+     */
+    const checkPainHits = (laserX) => {
+        setPainBubbles(prevBubbles => {
+          const hitBubbleIds = [];
+          let hitCount = 0;
 
-            // Check each bubble for collision
-            prevBubbles.forEach(bubble => {
-              // Calculate bubble center
-              const bubbleCenterX = bubble.x + bubble.radius;
+          // Check each bubble for collision
+          prevBubbles.forEach(bubble => {
+            // Calculate bubble center
+            const bubbleCenterX = bubble.x + bubble.radius;
 
-              // Check if laser x-coordinate is within bubble's horizontal range
-              const distanceX = Math.abs(bubbleCenterX - laserX);
+            // Check if laser x-coordinate is within bubble's horizontal range
+            const distanceX = Math.abs(bubbleCenterX - laserX);
 
-              // If laser is within bubble radius, it's a hit
-              if (distanceX <= bubble.radius) {
-                hitBubbleIds.push(bubble.id);
-                hitCount++;
-              }
-            });
-
-            // If any bubbles were hit, reduce the score
-            if (hitCount > 0 && score > 0) {
-              setScore(prevScore => prevScore - hitCount);
+            // If laser is within bubble radius, it's a hit
+            if (distanceX <= bubble.radius) {
+              hitBubbleIds.push(bubble.id);
+              hitCount++;
             }
-
-            // Return bubbles that weren't hit
-            return prevBubbles.filter(bubble => !hitBubbleIds.includes(bubble.id));
           });
+
+          // If any bubbles were hit, reduce the score
+          if (hitCount > 0 && score > 0) {
+            setScore(prevScore => prevScore - hitCount);
+          }
+
+          // Return bubbles that weren't hit
+          return prevBubbles.filter(bubble => !hitBubbleIds.includes(bubble.id));
+        });
+    };
+
+    /**
+     * Check if laser hits any pain bubbles
+     * @param {number} laserX - X coordinate of the laser
+     */
+     const checkBonusHits = (laserX) => {
+        setBonusBubbles(prevBubbles => {
+          const hitBubbleIds = [];
+          let hitCount = 0;
+
+          // Check each bubble for collision
+          prevBubbles.forEach(bubble => {
+            // Calculate bubble center
+            const bubbleCenterX = bubble.x + bubble.radius;
+
+            // Check if laser x-coordinate is within bubble's horizontal range
+            const distanceX = Math.abs(bubbleCenterX - laserX);
+
+            // If laser is within bubble radius, it's a hit
+            if (distanceX <= bubble.radius) {
+              hitBubbleIds.push(bubble.id);
+              hitCount++;
+            }
+          });
+
+          // If any bubbles were hit, increase the score by 5
+          if (hitCount > 0) {
+            setScore(prevScore => prevScore + (hitCount * 5));
+          }
+
+          // Return bubbles that weren't hit
+          return prevBubbles.filter(bubble => !hitBubbleIds.includes(bubble.id));
+        });
     };
   
   /**
@@ -334,6 +372,20 @@ export default function GameScreen() {
 
       setPainBubbles(prev => [...prev, newBubble]);
     };
+
+    const spawnBonusBubble = () => {
+      const radius = 20;
+      // Ensure bubble stays within screen bounds
+      const maxX = screenWidth - (radius * 2);
+      const newBubble = {
+        id: bubbleIdRef.current++,
+        x: Math.random() * maxX,
+        y: screenHeight - 100, // Start near bottom of screen
+        radius: radius,
+      };
+
+      setBonusBubbles(prev => [...prev, newBubble]);
+    };
   
   /**
    * Start the game
@@ -345,6 +397,9 @@ export default function GameScreen() {
     setScore(0);
     setTimeLeft(120);
     setBubbles([]);
+    setPainBubbles([]);
+    setPowerBubbles([]);
+    setBonusBubbles([]);
     setLaserVisible(false);
     bubbleIdRef.current = 1;
     
@@ -356,6 +411,9 @@ export default function GameScreen() {
 
     // Start spawning pain bubbles every 2000ms
     painBubbleTimerRef.current = setInterval(spawnPainBubble, 2000);
+
+    // Start spawning bonus bubbles every 18000ms
+    bonusBubbleTimerRef.current = setInterval(spawnBonusBubble, 18000);
 
 /*
     // Timer for electric power-up
@@ -425,7 +483,6 @@ export default function GameScreen() {
    */
   useEffect(() => {
     if (!gameStarted || gameOver) return;
-    console.log(bubbleSpeed)
     
     const moveInterval = setInterval(() => {
       setBubbles(prev => {
@@ -488,6 +545,29 @@ export default function GameScreen() {
 
         return () => clearInterval(moveInterval);
      }, [gameStarted, gameOver]);
+
+     /**
+      * Move bonus bubbles upward
+      * Uses effect to animate bubbles moving up the screen
+      */
+      useEffect(() => {
+         if (!gameStarted || gameOver) return;
+
+         const moveInterval = setInterval(() => {
+           setBonusBubbles(prev => {
+             const updatedBubbles = prev
+               .map(bubble => ({
+                 ...bubble,
+                 y: bubble.y - (Math.random() * 20), // Move bubbles up
+               }))
+               .filter(bubble => bubble.y > -60); // Remove bubbles that exit the top
+
+             return updatedBubbles;
+           });
+         }, 16); // ~60 FPS
+
+         return () => clearInterval(moveInterval);
+      }, [gameStarted, gameOver]);
   
   /**
    * Cleanup on unmount
@@ -549,7 +629,16 @@ export default function GameScreen() {
                 y={bubble.y}
                 radius={bubble.radius}
               />
-            ))}
+          ))}
+          {/* Bonus Bubbles */}
+          {bonusBubbles.map(bubble => (
+            <BonusBubble
+              key={`bubble-${bubble.id}`}
+              x={bubble.x}
+              y={bubble.y}
+              radius={bubble.radius}
+              />
+          ))}
 
           {/**
            * ============== STUDENT TASK 5 ==============
