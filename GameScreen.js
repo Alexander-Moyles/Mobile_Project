@@ -31,10 +31,12 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, Text, Dimensions, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, View, Text, Dimensions, TouchableWithoutFeedback, ImageBackground } from 'react-native';
 import Bubble from './components/Bubble';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+
+const backgroundImg = require("./assets/bubble_sky.png");
 
 export default function GameScreen() {
   /**
@@ -69,7 +71,7 @@ export default function GameScreen() {
    * });
    */
   
-  // Fixed gun position - currently in the middle (MODIFY THIS)
+  // Gun position
   const gunWidth = 60;
   const [gunPosition, setGunPosition] = useState({
      'x': (screenWidth / 2 - gunWidth / 2)
@@ -105,8 +107,14 @@ export default function GameScreen() {
     if (!gameStarted || gameOver) return;
     let { locationX } = event.nativeEvent;
     setGunPosition({ x: locationX - gunWidth/2});
-    fireLaser();
   };
+
+  /**
+   * Handle laser firing (temp fix until other thing's working)
+   */
+  const handleGun = () => {
+    fireLaser();
+  }
   
   /**
    * Fire a laser from the gun center
@@ -298,7 +306,15 @@ export default function GameScreen() {
   }, []);
   
   return (
-  <>
+  <ImageBackground
+     source={backgroundImg}
+     resizeMode="cover"
+     style={{
+       flex: 1,
+       justifyContent: 'center',
+     }}
+  >
+
     {/* Ensures player can only move/fire the gun if they tap the bottom of the screen */}
     <TouchableWithoutFeedback onPress={handleTap}>
         <View style={styles.gunHandler}></View>
@@ -306,7 +322,7 @@ export default function GameScreen() {
 
     <View style={styles.container} >
       {/* Game area */}
-      <TouchableWithoutFeedback disabled={!gameStarted || gameOver}>
+      <TouchableWithoutFeedback onPress={handleGun} disabled={!gameStarted || gameOver}>
         <View style={styles.gameArea}>
           {/* Bubbles */}
           {bubbles.map(bubble => (
@@ -317,7 +333,7 @@ export default function GameScreen() {
               radius={bubble.radius}
             />
           ))}
-          
+
           {/**
            * ============== STUDENT TASK 5 ==============
            * TODO: MODIFY LASER RENDERING
@@ -337,7 +353,7 @@ export default function GameScreen() {
               ]}
             />
           )}
-          
+
           {/**
            * ============== STUDENT TASK 6 ==============
            * TODO: MODIFY GUN RENDERING
@@ -362,7 +378,7 @@ export default function GameScreen() {
         <Text style={styles.scoreText}>Score: {score}</Text>
         <Text style={styles.scoreText}>Time: {timeLeft}s</Text>
       </View>
-      
+
       {/* Start Screen */}
       {!gameStarted && !gameOver && (
         <View style={styles.overlay}>
@@ -377,7 +393,7 @@ export default function GameScreen() {
 
       {/* Track for laser gun */}
       {<View onPress={fireLaser} style={styles.gunTrack}></View>}
-      
+
       {/* Game Over Screen */}
       {gameOver && (
         <View style={styles.overlay}>
@@ -391,7 +407,7 @@ export default function GameScreen() {
         </View>
       )}
     </View>
-  </>
+  </ImageBackground>
   );
 }
 
@@ -408,7 +424,6 @@ export default function GameScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000033',
     zIndex: 1,
   },
   gameArea: {

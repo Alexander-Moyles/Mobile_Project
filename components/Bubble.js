@@ -49,7 +49,10 @@ export default function Bubble({ x, y, radius }) {
 const styles = StyleSheet.create({
   bubble: {
     position: 'absolute',
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#11FD87',
+    opacity: 0.75,
+    borderColor: '#5782F0',
+    borderWidth: 1.75,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
