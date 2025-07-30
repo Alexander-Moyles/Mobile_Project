@@ -33,6 +33,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, Dimensions, TouchableWithoutFeedback, ImageBackground } from 'react-native';
 import Bubble from './components/Bubble';
+import ElectricBubble from './components/ElectricBubble';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -54,6 +55,10 @@ export default function GameScreen() {
   const [timeLeft, setTimeLeft] = useState(120);
   const [bubbles, setBubbles] = useState([]);
   const [laserVisible, setLaserVisible] = useState(false);
+
+  const [powerBubbles, setPowerBubbles] = useState([]);
+  const [laserWidth, setLaserWidth] = useState(4);
+  const [powerTime, setPowerTime] = useState();
   
   /**
    * ============== STUDENT TASK 1 ==============
@@ -98,6 +103,7 @@ export default function GameScreen() {
   const bubbleIdRef = useRef(1);
   const timerRef = useRef(null);
   const bubbleTimerRef = useRef(null);
+  const powerBubbleTimerRef = useRef(null);
   const laserTimeoutRef = useRef(null);
   
   /**
@@ -147,6 +153,7 @@ export default function GameScreen() {
     
     // Check for hits immediately
     checkHits(gunPosition['x'] + (gunWidth / 2) - 2);
+    checkPowerHits(gunPosition['x'] + (gunWidth / 2) - 2);
     
     // Make laser disappear after 300ms
     laserTimeoutRef.current = setTimeout(() => {
@@ -203,6 +210,44 @@ export default function GameScreen() {
       return prevBubbles.filter(bubble => !hitBubbleIds.includes(bubble.id));
     });
   };
+
+    const checkPowerHits = (laserX) => {
+        setPowerBubbles(prevBubbles => {
+          const hitBubbleIds = [];
+          let hitCount = 0;
+
+          // Check each bubble for collision
+          prevBubbles.forEach(bubble => {
+            // Calculate bubble center
+            const bubbleCenterX = bubble.x + bubble.radius;
+
+            // Check if laser x-coordinate is within bubble's horizontal range
+            const distanceX = Math.abs(bubbleCenterX - laserX);
+
+            // If laser is within bubble radius, it's a hit
+            if (distanceX <= bubble.radius) {
+              hitBubbleIds.push(bubble.id);
+              hitCount++;
+            }
+          });
+
+          // If any bubbles were hit, update the score
+          if (hitCount > 0) {
+            setScore(prevScore => prevScore + hitCount);
+            setPowerTime(3000);
+          }
+
+          // Return bubbles that weren't hit
+          return prevBubbles.filter(bubble => !hitBubbleIds.includes(bubble.id));
+        });
+  };
+
+  const PowerElectric = (time) => {
+    while (time > 0) {
+        setLaserWidth(10);
+        time--
+    }
+  }
   
   /**
    * Spawn a new bubble with random horizontal position
@@ -221,6 +266,20 @@ export default function GameScreen() {
     
     setBubbles(prev => [...prev, newBubble]);
   };
+
+  const spawnPowerBubble = () => {
+      const radius = 30;
+      // Ensure bubble stays within screen bounds
+      const maxX = screenWidth - (radius * 2);
+      const newBubble = {
+        id: bubbleIdRef.current++,
+        x: Math.random() * maxX,
+        y: screenHeight - 100, // Start near bottom of screen
+        radius: radius,
+      };
+
+      setPowerBubbles(prev => [...prev, newBubble]);
+    };
   
   /**
    * Start the game
@@ -236,7 +295,10 @@ export default function GameScreen() {
     bubbleIdRef.current = 1;
     
     // Start spawning bubbles every 500ms
-    bubbleTimerRef.current = setInterval(spawnBubble, 500);
+    //bubbleTimerRef.current = setInterval(spawnBubble, 500);
+
+    // Start spawning power bubbles every 2000ms
+    powerBubbleTimerRef.current = setInterval(spawnPowerBubble, 2000);
     
     // Start countdown timer
     timerRef.current = setInterval(() => {
@@ -268,6 +330,7 @@ export default function GameScreen() {
     
     if (timerRef.current) clearInterval(timerRef.current);
     if (bubbleTimerRef.current) clearInterval(bubbleTimerRef.current);
+    if (powerBubbleTimerRef.current) clearInterval(powerBubbleTimerRef.current);
   };
   
   /**
@@ -292,6 +355,25 @@ export default function GameScreen() {
     
     return () => clearInterval(moveInterval);
   }, [gameStarted, gameOver]);
+
+  useEffect(() => {
+      if (!gameStarted || gameOver) return;
+
+      const moveInterval = setInterval(() => {
+        setPowerBubbles(prev => {
+          const updatedBubbles = prev
+            .map(bubble => ({
+              ...bubble,
+              y: bubble.y - 5, // Move bubbles up
+            }))
+            .filter(bubble => bubble.y > -60); // Remove bubbles that exit the top
+
+          return updatedBubbles;
+        });
+      }, 16); // ~60 FPS
+
+      return () => clearInterval(moveInterval);
+    }, [gameStarted, gameOver]);
   
   /**
    * Cleanup on unmount
@@ -301,6 +383,7 @@ export default function GameScreen() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
       if (bubbleTimerRef.current) clearInterval(bubbleTimerRef.current);
+      if (powerBubbleTimerRef.current) clearInterval(powerBubbleTimerRef.current);
       if (laserTimeoutRef.current) clearTimeout(laserTimeoutRef.current);
     };
   }, []);
@@ -333,6 +416,15 @@ export default function GameScreen() {
               radius={bubble.radius}
             />
           ))}
+          {/* Power Bubbles */}
+          {powerBubbles.map(bubble => (
+            <ElectricBubble
+              key={`bubble-${bubble.id}`}
+              x={bubble.x}
+              y={bubble.y}
+              radius={bubble.radius}
+            />
+          ))}
 
           {/**
            * ============== STUDENT TASK 5 ==============
@@ -349,7 +441,8 @@ export default function GameScreen() {
             <View
               style={[
                 styles.laser,
-                { left: gunPosition['x'] + (gunWidth / 2) - 2 } // Center the 4px wide laser from gun center
+                { left: gunPosition['x'] + (gunWidth / 2) - 2 }, // Center the 4px wide laser from gun center
+                { width: laserWidth}
               ]}
             />
           )}
@@ -505,7 +598,6 @@ const styles = StyleSheet.create({
   laser: {
     position: 'absolute',
     top: 0,
-    width: 4,
     height: '97%',
     backgroundColor: '#ff0000',
     shadowColor: '#ff0000',
