@@ -390,6 +390,8 @@ export default function GameScreen() {
           // Game over
           clearInterval(timerRef.current);
           clearInterval(bubbleTimerRef.current);
+          clearInterval(painBubbleTimerRef.current);
+          clearInterval(bonusBubbleTimerRef.current);
           setGameOver(true);
           return 0;
         }
@@ -414,7 +416,9 @@ export default function GameScreen() {
     if (timerRef.current) clearInterval(timerRef.current);
     if (powerTimeRef.current) clearInterval(powerTimeRef.current);
     if (bubbleTimerRef.current) clearInterval(bubbleTimerRef.current);
-    if (powerBubbleTimerRef.current) clearInterval(powerBubbleTimerRef.current);
+    if (powerBubbleTimerRef.current) clearInterval(powerBubbleTimerRef.current); // Unused
+    if (painBubbleTimerRef.current) clearInterval(painBubbleTimerRef.current);
+    if (bonusBubbleTimerRef.current) clearInterval(bonusBubbleTimerRef.current);
   };
 
   /**
@@ -518,7 +522,9 @@ export default function GameScreen() {
       if (timerRef.current) clearInterval(timerRef.current);
       if (powerTimeRef.current) clearInterval(powerTimeRef.current);
       if (bubbleTimerRef.current) clearInterval(bubbleTimerRef.current);
-      if (powerBubbleTimerRef.current) clearInterval(powerBubbleTimerRef.current);
+      if (powerBubbleTimerRef.current) clearInterval(powerBubbleTimerRef.current); // Unused
+      if (painBubbleTimerRef.current) clearInterval(painBubbleTimerRef.current);
+      if (bonusBubbleTimerRef.current) clearInterval(bonusBubbleTimerRef.current);
       if (laserTimeoutRef.current) clearTimeout(laserTimeoutRef.current);
     };
   }, []);
