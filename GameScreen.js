@@ -4,37 +4,26 @@
  * ============== GAME OVERVIEW ==============
  * A bubble shooting game built with React Native and Expo.
  * 
- * CURRENT IMPLEMENTATION:
+ * INITIAL IMPLEMENTATION:
  * - Bubble Spawning: Random horizontal positions every 0.5s
+ *   - 2 other bubble types which spawn at slower intervals
  * - Bubble Movement: Upward motion until off-screen
- * - Static Gun: Fixed at bottom center
+ * - Movable Gun: Tap lowest portion of screen to move
+ *   - Tap elsewhere to fire laser
  * - Basic Laser: Vertical red line appearing for 0.3s on tap
- * - Simple Hit Detection: X-axis distance comparison
+ * - Hit Detection: X-axis distance comparison, modified for better consistency
  * - Game Flow: Start screen, 120s countdown, score tracking, game over screen
- * 
- * ============== STUDENT ASSIGNMENT ==============
- * Your task is to extend this game by implementing a movable gun that can
- * fire in different directions to make the game more engaging.
- * 
- * ASSESSMENT CRITERIA:
- * 1. Functionality: Gun movement and response to input
- * 2. Code Quality: Structure, comments, efficiency
- * 3. User Experience: Intuitive gameplay, visual appeal
- * 4. Creativity: Unique features beyond requirements
- * 5. Performance: Smooth operation without issues
- * 
- * TIPS:
- * - Use React Native's touch handling for smooth control
- * - Consider Animated API for smoother animations
- * - Clean up any event listeners or timers you add
- * - Test on different device sizes for responsive UI
  */
 
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, Dimensions, TouchableWithoutFeedback, ImageBackground } from 'react-native';
 import Bubble from './components/Bubble';
-import ElectricBubble from './components/ElectricBubble';
-import IceBubble from './components/IceBubble';
+/*
+  Had initially attempted to add bubbles which would grant power-ups, but there was an issue getting
+  them to implement properly and ultimately replaced them with the "Pain" & "Bonus" Bubbles.
+ */
+//import ElectricBubble from './components/ElectricBubble';
+//import IceBubble from './components/IceBubble';
 import PainBubble from './components/PainBubble';
 import BonusBubble from './components/BonusBubble';
 
@@ -51,6 +40,12 @@ export default function GameScreen() {
    * - score/timeLeft: Track player progress
    * - bubbles: Array of bubble objects with positions
    * - laserVisible: Controls when the laser is shown
+   * - powerBubbles: Unused array of power-up granting bubbles
+   * - painBubbles: Array of bubbles which reduce score on hit
+   * - bonusBubbles: Array of bubbles worth 5 points instead of 1
+   * - laserWidth: Controls the width of the laser
+   * - powerTime: Unused handler for remaining power-up time
+   * - bubbleSpeed: Controls speed of regular bubbles
    */
   const [gameStarted, setGameStarted] = useState(false);
   const [gameOver, setGameOver] = useState(false);
@@ -58,54 +53,19 @@ export default function GameScreen() {
   const [timeLeft, setTimeLeft] = useState(120);
   const [bubbles, setBubbles] = useState([]);
   const [laserVisible, setLaserVisible] = useState(false);
-
-  const [powerBubbles, setPowerBubbles] = useState([]);
+  //const [powerBubbles, setPowerBubbles] = useState([]);
   const [painBubbles, setPainBubbles] = useState([]);
   const [bonusBubbles, setBonusBubbles] = useState([]);
   const [laserWidth, setLaserWidth] = useState(4);
-  const [powerTime, setPowerTime] = useState();
+  //const [powerTime, setPowerTime] = useState();
   const [bubbleSpeed, setBubbleSpeed] = useState(2);
 
-
-  
-  /**
-   * ============== STUDENT TASK 1 ==============
-   * TODO: IMPLEMENT MOVABLE GUN
-   * 
-   * Currently the gun is fixed in the middle. Modify this code to:
-   * 1. Add state to track gun position (both X and Y coordinates)
-   * 2. Allow the gun to move based on user input (e.g., touch/drag or buttons)
-   * 3. Ensure the gun stays within screen boundaries
-   * 
-   * Example implementation approach:
-   * const [gunPosition, setGunPosition] = useState({ 
-   *   x: screenWidth / 2 - gunWidth / 2, 
-   *   y: screenHeight - 70
-   * });
-   */
   
   // Gun position
   const gunWidth = 60;
   const [gunPosition, setGunPosition] = useState({
      'x': (screenWidth / 2 - gunWidth / 2)
   });
-  
-  /**
-   * ============== STUDENT TASK 2 ==============
-   * TODO: IMPLEMENT GUN MOVEMENT
-   * 
-   * Add functions to:
-   * 1. Handle touch/drag events to move the gun
-   * 2. Update the gun position state
-   * 3. Add visual feedback for active controls
-   * 
-   * Example implementation approach:
-   * const handleTouchMove = (event) => {
-   *   const { locationX, locationY } = event.nativeEvent;
-   *   // Apply constraints to keep gun on screen
-   *   setGunPosition({ x: locationX - gunWidth/2, y: locationY });
-   * };
-   */
   
   // Refs for game timers and IDs
   const bubbleIdRef = useRef(1);
@@ -146,22 +106,6 @@ export default function GameScreen() {
     // Make laser visible
     setLaserVisible(true);
     
-    /**
-     * ============== STUDENT TASK 3 ==============
-     * TODO: MODIFY LASER FIRING
-     * 
-     * Currently the laser always fires from the center.
-     * Update this to:
-     * 1. Fire from the current gun position
-     * 2. Consider firing angle/direction based on gun orientation
-     * 3. Add visual or sound effects for better feedback
-     * 
-     * Example implementation approach:
-     * - Calculate laser end point based on angle
-     * - Update laser rendering to show angled beam
-     * - Add impact effects when laser hits bubbles
-     */
-    
     // Check for hits immediately
     checkHits(gunPosition['x'] + (gunWidth / 2) - (laserWidth / 2));
     checkPowerHits(gunPosition['x'] + (gunWidth / 2) - (laserWidth / 2));
@@ -182,22 +126,6 @@ export default function GameScreen() {
     setBubbles(prevBubbles => {
       const hitBubbleIds = [];
       let hitCount = 0;
-      
-      /**
-       * ============== STUDENT TASK 4 ==============
-       * TODO: IMPROVE COLLISION DETECTION
-       * 
-       * The current collision only works on X axis.
-       * Enhance it to:
-       * 1. Consider both X and Y coordinates
-       * 2. Account for gun position and angle
-       * 3. Add smarter targeting or auto-aiming features
-       * 
-       * Example implementation approach:
-       * - Calculate distance between laser line and bubble center
-       * - Use line-circle intersection algorithms for angled lasers
-       * - Consider adding laser width for more realistic collision
-       */
       
       // Check each bubble for collision
       prevBubbles.forEach(bubble => {
@@ -294,7 +222,7 @@ export default function GameScreen() {
     };
 
     /**
-     * Check if laser hits any pain bubbles
+     * Check if laser hits any bonus bubbles
      * @param {number} laserX - X coordinate of the laser
      */
      const checkBonusHits = (laserX) => {
@@ -345,6 +273,7 @@ export default function GameScreen() {
     setBubbles(prev => [...prev, newBubble]);
   };
 
+/* Spawner for power-up bubbles, unused due to implimentation issues
   const spawnPowerBubble = () => {
       const radius = 30;
       // Ensure bubble stays within screen bounds
@@ -358,7 +287,12 @@ export default function GameScreen() {
 
       setPowerBubbles(prev => [...prev, newBubble]);
     };
+*/
 
+/**
+ * Spawns a "Pain Bubble" with random horizontal position
+ * Creates pain bubble at bottom of screen with random X position
+ */
   const spawnPainBubble = () => {
       const radius = 17.5;
       // Ensure bubble stays within screen bounds
@@ -373,6 +307,10 @@ export default function GameScreen() {
       setPainBubbles(prev => [...prev, newBubble]);
     };
 
+/**
+ * Spawns a "Bonus Bubble" with random horizontal position
+ * Creates bonus bubble at bottom of screen with random X position
+ */
     const spawnBonusBubble = () => {
       const radius = 20;
       // Ensure bubble stays within screen bounds
@@ -406,7 +344,7 @@ export default function GameScreen() {
     // Start spawning bubbles every 500ms
     bubbleTimerRef.current = setInterval(spawnBubble, 500);
 
-    // Start spawning power bubbles every 5000ms
+    // Start spawning power bubbles every 5000ms - unused
     //powerBubbleTimerRef.current = setInterval(spawnPowerBubble, 12000);
 
     // Start spawning pain bubbles every 2000ms
@@ -416,6 +354,10 @@ export default function GameScreen() {
     bonusBubbleTimerRef.current = setInterval(spawnBonusBubble, 18000);
 
 /*
+ //Timers for the unused power-up bubbles
+   // Electric power-up removed due to issues with laser width and position
+   // Ice power-up removed due to issues with bubble rendering
+
     // Timer for electric power-up
     powerTimeRef.current = setInterval(() => {
           setPowerTime(prev => {
@@ -428,7 +370,6 @@ export default function GameScreen() {
             return prev - 1;
           });
         }, powerTime);
-*/
 
     // Timer for ice power-up
     powerTimeRef.current = setInterval(() => {
@@ -457,7 +398,9 @@ export default function GameScreen() {
       });
     }, 1000);
   };
-  
+*/
+
+
   /**
    * Reset game
    * Returns game to initial state and cleans up timers
@@ -501,9 +444,10 @@ export default function GameScreen() {
   }, [gameStarted, gameOver]);
 
   /**
-   * Move power bubbles upward
+   * Move power bubbles upward - unused due to implimentation issues
    * Uses effect to animate bubbles moving up the screen
    */
+/*
   useEffect(() => {
       if (!gameStarted || gameOver) return;
 
@@ -522,6 +466,7 @@ export default function GameScreen() {
 
       return () => clearInterval(moveInterval);
     }, [gameStarted, gameOver]);
+*/
 
     /**
      * Move pain bubbles upward
@@ -578,7 +523,7 @@ export default function GameScreen() {
       if (timerRef.current) clearInterval(timerRef.current);
       if (powerTimeRef.current) clearInterval(powerTimeRef.current);
       if (bubbleTimerRef.current) clearInterval(bubbleTimerRef.current);
-      if (powerBubbleTimerRef.current) clearInterval(powerBubbleTimerRef.current);
+      if (powerBubbleTimerRef.current) clearInterval(powerBubbleTimerRef.current); //Unused
       if (laserTimeoutRef.current) clearTimeout(laserTimeoutRef.current);
     };
   }, []);
@@ -593,7 +538,7 @@ export default function GameScreen() {
      }}
   >
 
-    {/* Ensures player can only move/fire the gun if they tap the bottom of the screen */}
+    {/* Ensures player can only move the gun if they tap the bottom of the screen */}
     <TouchableWithoutFeedback onPress={handleTap}>
         <View style={styles.gunHandler}></View>
     </TouchableWithoutFeedback>
@@ -640,17 +585,7 @@ export default function GameScreen() {
               />
           ))}
 
-          {/**
-           * ============== STUDENT TASK 5 ==============
-           * TODO: MODIFY LASER RENDERING
-           * Currently the laser is a simple vertical line.
-           * Enhance it to:
-           * 1. Render based on gun position and angle
-           * 2. Add visual effects (color, thickness, etc.)
-           * 3. Consider adding a cooldown or power meter
-           */}
-
-          {/* Laser - currently fixed to fire from center of gun */}
+          {/* Laser - fires from center of gun */}
           {laserVisible && (
             <View
               style={[
@@ -661,19 +596,8 @@ export default function GameScreen() {
             />
           )}
 
-          {/**
-           * ============== STUDENT TASK 6 ==============
-           * TODO: MODIFY GUN RENDERING
-           * Currently the gun is fixed at the bottom center.
-           * Update it to:
-           * 1. Use the gun position state you created
-           * 2. Add visual indication of gun direction/angle
-           * 3. Add controls or touch areas for movement
-           */}
-
-          {/* Gun - currently static in middle */}
+          {/* Gun - moves when user clicks lowest portion of screen */}
           <View style={[styles.gun, { left: gunPosition.x }]}>
-
             <View style={styles.gunBase} />
             <View style={styles.gunBarrel} />
           </View>
@@ -717,16 +641,6 @@ export default function GameScreen() {
   </ImageBackground>
   );
 }
-
-/**
- * ============== STUDENT TASK 7 ==============
- * TODO: ENHANCE THE STYLING
- * Consider adding styles for:
- * 1. Different gun states (active, cooldown)
- * 2. Enhanced laser effects
- * 3. Controls for gun movement
- * 4. Power-ups or special ability indicators
- */
 
 const styles = StyleSheet.create({
   container: {

@@ -4,17 +4,10 @@
  * Renders a circular bubble for the Bubble Popper game.
  * Each bubble has a position (x, y) and size (radius).
  * 
- * CURRENT IMPLEMENTATION:
- * - Simple green circle with drop shadow
- * - Fixed radius (typically 30)
- * - Absolute positioning
- * 
- * ============== STUDENT EXTENSION IDEAS ==============
- * Consider enhancing this component with:
- * 1. Different bubble types/colors
- * 2. Animation effects (pulsing, rotation)
- * 3. Pop animation when hit by laser
- * 4. Special power-up bubbles
+ * Electric bubbles are an unused type of bubble which would have made the laser wider for a few
+ * seconds on hit, laser would in theory have also changed laser color for the duration.
+ *
+ * Unused due to issues with laser width and position
  */
 
 import React from 'react';
