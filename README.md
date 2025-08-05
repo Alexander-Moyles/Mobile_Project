@@ -64,12 +64,12 @@ BubblePopper/
 npm run android
 ```
 
-### On iOS Simulator/Device (macOS only)
+### On iOS Simulator/Device (macOS only) - untested for current version
 ```bash
 npm run ios
 ```
 
-### On Web Browser
+### On Web Browser - does not work on current version
 ```bash
 npm run web
 ```
@@ -83,21 +83,25 @@ npm start
 
 1. Tap "Start Game" to begin
 2. Bubbles will start spawning from the bottom and floating upward
-3. Tap anywhere on the screen to shoot a red laser vertically
-4. Try to hit as many bubbles as possible within 120 seconds
-5. Each bubble hit gives you +1 point
-6. When time runs out, your final score is displayed
-7. Tap "Play Again" to restart
+3. Tap track at bottom of screen to move gun
+4. Tap anywhere else on screen to fire laser 
+5. Try to hit as many bubbles as possible within 120 seconds
+6. Regular bubble hits gives you +1 point, bonus bubbles give +5 points, pain bubbles take away 1 point (-1 point)
+7. When time runs out, your final score is displayed
+8. Tap "Play Again" to restart
 
 ## Game Controls
 
-- **Tap anywhere**: Shoot laser
+- **Tap lowest part of screen**: Move Gun
+- **Tap elsewhere on screen**: Fire Laser
 - **Start Game button**: Begin new game
 - **Play Again button**: Restart after game over
 
 ## Scoring
 
-- Each bubble popped = +1 point
+- Regular bubble popped = +1 point
+- Pain bubble popped = -1 point
+- Bonus bubble popped = +5 points
 - Game duration = 120 seconds
 - Goal: Get the highest score possible!
 
@@ -120,4 +124,5 @@ npm start
 
 ## Author
 
+Alexander Moyles
 Created for CP4282 Programming for Mobile Devices - Spring 2025
