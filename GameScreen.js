@@ -34,7 +34,7 @@ const backgroundImg = require("./assets/bubble_sky.png");
 export default function GameScreen() {
   /**
    * Game State
-   * 
+   *
    * These state variables manage the core game functionality:
    * - gameStarted/gameOver: Control game flow
    * - score/timeLeft: Track player progress
@@ -53,20 +53,19 @@ export default function GameScreen() {
   const [timeLeft, setTimeLeft] = useState(120);
   const [bubbles, setBubbles] = useState([]);
   const [laserVisible, setLaserVisible] = useState(false);
-  //const [powerBubbles, setPowerBubbles] = useState([]);
+  const [powerBubbles, setPowerBubbles] = useState([]);
   const [painBubbles, setPainBubbles] = useState([]);
   const [bonusBubbles, setBonusBubbles] = useState([]);
   const [laserWidth, setLaserWidth] = useState(4);
-  //const [powerTime, setPowerTime] = useState();
+  const [powerTime, setPowerTime] = useState();
   const [bubbleSpeed, setBubbleSpeed] = useState(2);
 
-  
   // Gun position
   const gunWidth = 60;
   const [gunPosition, setGunPosition] = useState({
      'x': (screenWidth / 2 - gunWidth / 2)
   });
-  
+
   // Refs for game timers and IDs
   const bubbleIdRef = useRef(1);
   const timerRef = useRef(null);
@@ -76,7 +75,7 @@ export default function GameScreen() {
   const bonusBubbleTimerRef = useRef(null);
   const laserTimeoutRef = useRef(null);
   const powerTimeRef = useRef(null)
-  
+
   /**
    * Handle tap to shoot laser
    */
@@ -92,7 +91,7 @@ export default function GameScreen() {
   const handleGun = () => {
     fireLaser();
   }
-  
+
   /**
    * Fire a laser from the gun center
    * Creates visible laser and checks for bubble hits
@@ -102,22 +101,22 @@ export default function GameScreen() {
     if (laserTimeoutRef.current) {
       clearTimeout(laserTimeoutRef.current);
     }
-    
+
     // Make laser visible
     setLaserVisible(true);
-    
+
     // Check for hits immediately
     checkHits(gunPosition['x'] + (gunWidth / 2) - (laserWidth / 2));
     checkPowerHits(gunPosition['x'] + (gunWidth / 2) - (laserWidth / 2));
     checkPainHits(gunPosition['x'] + (gunWidth / 2) - (laserWidth / 2));
     checkBonusHits(gunPosition['x'] + (gunWidth / 2) - (laserWidth / 2));
-    
+
     // Make laser disappear after 300ms
     laserTimeoutRef.current = setTimeout(() => {
       setLaserVisible(false);
     }, 300);
   };
-  
+
   /**
    * Check if laser hits any bubbles
    * @param {number} laserX - X coordinate of the laser
@@ -126,12 +125,12 @@ export default function GameScreen() {
     setBubbles(prevBubbles => {
       const hitBubbleIds = [];
       let hitCount = 0;
-      
+
       // Check each bubble for collision
       prevBubbles.forEach(bubble => {
         // Calculate bubble center
         const bubbleCenterX = bubble.x + bubble.radius;
-        
+
         // Check if laser x-coordinate is within bubble's horizontal range
         const distanceX = Math.abs(bubbleCenterX - laserX);
 
@@ -141,19 +140,19 @@ export default function GameScreen() {
           hitCount++;
         }
       });
-      
+
       // If any bubbles were hit, update the score
       if (hitCount > 0) {
         setScore(prevScore => prevScore + hitCount);
       }
-      
+
       // Return bubbles that weren't hit
       return prevBubbles.filter(bubble => !hitBubbleIds.includes(bubble.id));
     });
   };
 
     /**
-     * Check if laser hits any power bubbles
+     * Check if laser hits any power-up bubbles (such are unused in the final version)
      * @param {number} laserX - X coordinate of the laser
      */
     const checkPowerHits = (laserX) => {
@@ -254,7 +253,7 @@ export default function GameScreen() {
           return prevBubbles.filter(bubble => !hitBubbleIds.includes(bubble.id));
         });
     };
-  
+
   /**
    * Spawn a new bubble with random horizontal position
    * Creates bubble at bottom of screen with random X position
@@ -269,11 +268,11 @@ export default function GameScreen() {
       y: screenHeight - 100, // Start near bottom of screen
       radius: radius,
     };
-    
+
     setBubbles(prev => [...prev, newBubble]);
   };
 
-/* Spawner for power-up bubbles, unused due to implimentation issues
+// Spawner for power-up bubbles, unused due to implimentation issues
   const spawnPowerBubble = () => {
       const radius = 30;
       // Ensure bubble stays within screen bounds
@@ -287,7 +286,6 @@ export default function GameScreen() {
 
       setPowerBubbles(prev => [...prev, newBubble]);
     };
-*/
 
 /**
  * Spawns a "Pain Bubble" with random horizontal position
@@ -324,7 +322,7 @@ export default function GameScreen() {
 
       setBonusBubbles(prev => [...prev, newBubble]);
     };
-  
+
   /**
    * Start the game
    * Initializes game state and starts timers for bubble spawning and countdown
@@ -340,7 +338,7 @@ export default function GameScreen() {
     setBonusBubbles([]);
     setLaserVisible(false);
     bubbleIdRef.current = 1;
-    
+
     // Start spawning bubbles every 500ms
     bubbleTimerRef.current = setInterval(spawnBubble, 500);
 
@@ -370,6 +368,7 @@ export default function GameScreen() {
             return prev - 1;
           });
         }, powerTime);
+*/
 
     // Timer for ice power-up
     powerTimeRef.current = setInterval(() => {
@@ -383,7 +382,7 @@ export default function GameScreen() {
             return prev - 1;
           });
         }, powerTime);
-    
+
     // Start countdown timer
     timerRef.current = setInterval(() => {
       setTimeLeft(prev => {
@@ -398,8 +397,6 @@ export default function GameScreen() {
       });
     }, 1000);
   };
-*/
-
 
   /**
    * Reset game
@@ -413,7 +410,7 @@ export default function GameScreen() {
     setTimeLeft(120);
     setLaserVisible(false);
     bubbleIdRef.current = 1;
-    
+
     if (timerRef.current) clearInterval(timerRef.current);
     if (powerTimeRef.current) clearInterval(powerTimeRef.current);
     if (bubbleTimerRef.current) clearInterval(bubbleTimerRef.current);
@@ -426,7 +423,7 @@ export default function GameScreen() {
    */
   useEffect(() => {
     if (!gameStarted || gameOver) return;
-    
+
     const moveInterval = setInterval(() => {
       setBubbles(prev => {
         const updatedBubbles = prev
@@ -439,7 +436,7 @@ export default function GameScreen() {
         return updatedBubbles;
       });
     }, 16); // ~60 FPS
-    
+
     return () => clearInterval(moveInterval);
   }, [gameStarted, gameOver]);
 
@@ -447,7 +444,6 @@ export default function GameScreen() {
    * Move power bubbles upward - unused due to implimentation issues
    * Uses effect to animate bubbles moving up the screen
    */
-/*
   useEffect(() => {
       if (!gameStarted || gameOver) return;
 
@@ -466,7 +462,6 @@ export default function GameScreen() {
 
       return () => clearInterval(moveInterval);
     }, [gameStarted, gameOver]);
-*/
 
     /**
      * Move pain bubbles upward
@@ -513,7 +508,7 @@ export default function GameScreen() {
 
          return () => clearInterval(moveInterval);
       }, [gameStarted, gameOver]);
-  
+
   /**
    * Cleanup on unmount
    * Ensures all timers are cleared when component unmounts
@@ -523,11 +518,11 @@ export default function GameScreen() {
       if (timerRef.current) clearInterval(timerRef.current);
       if (powerTimeRef.current) clearInterval(powerTimeRef.current);
       if (bubbleTimerRef.current) clearInterval(bubbleTimerRef.current);
-      if (powerBubbleTimerRef.current) clearInterval(powerBubbleTimerRef.current); //Unused
+      if (powerBubbleTimerRef.current) clearInterval(powerBubbleTimerRef.current);
       if (laserTimeoutRef.current) clearTimeout(laserTimeoutRef.current);
     };
   }, []);
-  
+
   return (
   <ImageBackground
      source={backgroundImg}
@@ -538,7 +533,7 @@ export default function GameScreen() {
      }}
   >
 
-    {/* Ensures player can only move the gun if they tap the bottom of the screen */}
+    {/* Ensures player can only move/fire the gun if they tap the bottom of the screen */}
     <TouchableWithoutFeedback onPress={handleTap}>
         <View style={styles.gunHandler}></View>
     </TouchableWithoutFeedback>
@@ -556,7 +551,7 @@ export default function GameScreen() {
               radius={bubble.radius}
             />
           ))}
-          {/* Power Bubbles
+          {/* Power Bubbles - unused due to implimentation issues
           {powerBubbles.map(bubble => (
             <IceBubble
               key={`bubble-${bubble.id}`}
@@ -598,6 +593,7 @@ export default function GameScreen() {
 
           {/* Gun - moves when user clicks lowest portion of screen */}
           <View style={[styles.gun, { left: gunPosition.x }]}>
+
             <View style={styles.gunBase} />
             <View style={styles.gunBarrel} />
           </View>
