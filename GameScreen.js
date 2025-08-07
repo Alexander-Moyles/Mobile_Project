@@ -86,7 +86,7 @@ export default function GameScreen() {
   };
 
   /**
-   * Handle laser firing (temp fix until other thing's working)
+   * Handle laser firing
    */
   const handleGun = () => {
     fireLaser();
