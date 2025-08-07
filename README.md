@@ -34,9 +34,13 @@ Bubble Popper is a simple one-screen mobile game where:
 BubblePopper/
 ├── App.js                 # Main app component that registers GameScreen
 ├── GameScreen.js          # Game logic & hooks
+├── assets/bubble_sky.png  # Background for game
 ├── components/
-│   ├── Bubble.js         # Circle view component
-│   └── Laser.js          # Temporary vertical line component
+│   ├── Bubble.js          # Circle view component representing a regular bubble
+│   ├── PainBubble.js      # Circle view component representing a special hurtful bubble
+│   ├── BonusBubble.js     # Circle view component representing a special helpful bubble
+│   ├── IceBubble.js       # Unused Circle view component
+│   └── ElectricBubble.js  # Unused Circle view component
 ├── package.json
 └── README.md
 ```
@@ -124,5 +128,4 @@ npm start
 
 ## Author
 
-Alexander Moyles
-Created for CP4282 Programming for Mobile Devices - Spring 2025
+Created by Alexander Moyles for CP4282 Programming for Mobile Devices - Spring 2025
